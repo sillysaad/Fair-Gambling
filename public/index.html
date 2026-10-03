@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fair Gambling — Hard Mode</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * { box-sizing: border-box; }
+
+      :root {
+        --bg: #f4f2ec;
+        --card: #fffdf8;
+        --ink: #1c1a16;
+        --muted: #837c6e;
+        --line: #e6e1d4;
+        --gold: #b8872f;
+        --gold-dim: #efe3c6;
+        --win: #3f7a52;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: start center;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Inter", -apple-system, system-ui, sans-serif;
+        padding: 48px 16px 80px;
+      }
+
+      main {
+        width: min(100%, 420px);
+        display: grid;
+        gap: 28px;
+      }
+
+      .brand {
+        text-align: center;
+        display: grid;
+        gap: 4px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-family: "Fraunces", serif;
+        font-weight: 600;
+        font-size: 30px;
+        letter-spacing: -0.01em;
+      }
+
+      .brand p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero {
+        text-align: center;
+        display: grid;
+        gap: 6px;
+        padding: 6px 0 2px;
+      }
+
+      .hero .cash {
+        font-family: "Fraunces", serif;
+        font-weight: 500;
+        font-size: 56px;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        transition: color 0.3s ease;
+      }
+
+      .hero .cash.win {
+        color: var(--win);
+      }
+
+      .hero .streak {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .machine {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 1px 0 rgba(28, 26, 22, 0.03);
+      }
+
+      .reels {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        background: #efece2;
+        border-radius: 14px;
+        padding: 12px;
+        box-shadow: inset 0 2px 6px rgba(28, 26, 22, 0.08);
+      }
+
+      .reel {
+        aspect-ratio: 1;
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+        background: #fffefb;
+        font-size: 44px;
+        user-select: none;
+      }
+
+      .reel .strip {
+        position: absolute;
+        inset: 0 0 auto;
+        height: 100%;
+        will-change: transform;
+      }
+
+      .reel .symbol {
+        height: var(--cell, 100%);
+        display: grid;
+        place-items: center;
+        line-height: 1;
+      }
+
+      .machine.win {
+        animation: lift 0.6s cubic-bezier(0.2, 1.5, 0.35, 1);
+      }
+      .corner-trigger {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+        width: 56px;
+        height: 56px;
+        background: transparent;
+        border: none;
+        outline: none;
+        padding: 0;
+        margin: 0;
+        cursor: default;
+        -webkit-tap-highlight-color: transparent;
+      }
+      @keyframes lift {
+        0%, 100% { transform: scale(1); }
+        35% { transform: scale(1.015); }
+        70% { transform: scale(1.008); }
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      button {
+        appearance: none;
+        border: 1px solid transparent;
+        border-radius: 12px;
+        min-height: 48px;
+        padding: 10px 16px;
+        font: inherit;
+        font-weight: 600;
+        font-size: 15px;
+        cursor: pointer;
+        transition: transform 0.12s ease, opacity 0.12s ease, background 0.15s ease;
+      }
+
+      button:active { transform: scale(0.98); }
+      button:disabled { opacity: 0.45; cursor: wait; }
+
+      button.spin {
+        background: var(--ink);
+        color: #fff;
+      }
+
+      button.redeem {
+        background: var(--gold-dim);
+        border-color: var(--gold-dim);
+        color: #6b4f16;
+      }
+
+      .message {
+        min-height: 20px;
+        text-align: center;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--win);
+      }
+
+      .paytable {
+        display: grid;
+        gap: 2px;
+      }
+
+      .paytable .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 9px 2px;
+        border-bottom: 1px solid var(--line);
+        font-size: 14px;
+      }
+
+      .paytable .row:last-child { border-bottom: none; }
+
+      .paytable .symbols { font-size: 17px; letter-spacing: 2px; }
+
+      .paytable .payout { color: var(--muted); font-variant-numeric: tabular-nums; }
+
+      .paytable .footnote {
+        padding-top: 10px;
+        color: var(--muted);
+        font-size: 12px;
+        text-align: center;
+      }
+
+      .win-pop {
+        position: fixed;
+        left: 50%;
+        top: 26%;
+        transform: translate(-50%, 0);
+        color: var(--win);
+        font-family: "Fraunces", serif;
+        font-weight: 600;
+        font-size: clamp(32px, 8vw, 56px);
+        pointer-events: none;
+        animation: win-pop 1.1s cubic-bezier(0.2, 1.5, 0.35, 1) forwards;
+      }
+
+      .confetti {
+        position: fixed;
+        left: 50%;
+        top: 46%;
+        width: 10px;
+        height: 16px;
+        border-radius: 3px;
+        pointer-events: none;
+        animation: confetti 980ms cubic-bezier(0.12, 0.8, 0.24, 1) forwards;
+      }
+
+      @keyframes win-pop {
+        0% { opacity: 0; transform: translate(-50%, 20px) scale(0.75); }
+        20% { opacity: 1; transform: translate(-50%, 0) scale(1.08); }
+        100% { opacity: 0; transform: translate(-50%, -70px) scale(1); }
+      }
+
+      @keyframes confetti {
+        from {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(0) scale(0.8);
+        }
+        to {
+          opacity: 0;
+          transform: translate(calc(-50% + var(--x)), calc(-50% + var(--y))) rotate(var(--r)) scale(1);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="brand">
+        <h1>Fair Gambling</h1>
+        <p>Hard mode — provably fair, allegedly.</p>
+      </header>
+
+      <div class="hero">
+        <div class="cash">$1,000</div>
+        <div class="streak">Win streak: 0</div>
+      </div>
+
+      <section class="machine">
+        <div class="reels">
+          <div class="reel"><div class="strip"><span class="symbol">❓</span></div></div>
+          <div class="reel"><div class="strip"><span class="symbol">❓</span></div></div>
+          <div class="reel"><div class="strip"><span class="symbol">❓</span></div></div>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button class="spin" type="button" disabled>Spin — $25</button>
+        <button class="redeem" type="button" disabled>Redeem $1,000,000</button>
+      </div>
+
+      <div class="message"></div>
+
+      <div class="paytable"></div>
+      <button class="corner-trigger" type="button" tabindex="0" aria-hidden="true" disabled></button>
+    </main>
+
+    <script>
+      const reels = [...document.querySelectorAll(".reel")];
+      const spinButton = document.querySelector(".spin");
+      const redeemButton = document.querySelector(".redeem");
+      const machine = document.querySelector(".machine");
+      const cashEl = document.querySelector(".cash");
+      const streakEl = document.querySelector(".streak");
+      const paytable = document.querySelector(".paytable");
+      const message = document.querySelector(".message");
+      const cornerTrigger = document.querySelector(".corner-trigger");
+
+      let symbols = [];
+      const money = (n) => `$${n.toLocaleString()}`;
+      const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+      const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+
+      function setBusy(b) {
+        spinButton.disabled = b;
+        redeemButton.disabled = b;
+        cornerTrigger.disabled = b;
+      }
+
+      function makeStrip(reel, result, loops) {
+        const strip = document.createElement("div");
+        strip.className = "strip";
+
+        const sequence = [result];
+        sequence.push(
+          ...Array.from({ length: loops * symbols.length }, (_, i) => symbols[i % symbols.length]),
+        );
+
+        strip.innerHTML = sequence.map((s) => `<span class="symbol">${s}</span>`).join("");
+        reel.style.setProperty("--cell", `${reel.clientHeight}px`);
+        reel.replaceChildren(strip);
+        return { strip, distance: reel.clientHeight * (sequence.length - 1) };
+      }
+
+      async function spinReel(reel, result, index, suspense) {
+        const { strip, distance } = makeStrip(reel, result, 5 + index * 2);
+        const duration = 1300 + index * 480 + (suspense && index === 2 ? 800 : 0);
+        const animation = strip.animate(
+          [{ transform: `translateY(-${distance}px)` }, { transform: "translateY(0)" }],
+          { duration, easing: "cubic-bezier(.1,.7,.15,1)", fill: "forwards" },
+        );
+        await animation.finished;
+        reel.innerHTML = `<div class="strip"><span class="symbol">${result}</span></div>`;
+      }
+
+      function popWin(win) {
+        const pop = document.createElement("div");
+        pop.className = "win-pop";
+        pop.textContent = `+${money(win)}`;
+        document.body.append(pop);
+        pop.addEventListener("animationend", () => pop.remove());
+      }
+
+      function celebrate(win) {
+        machine.classList.remove("win");
+        void machine.offsetWidth;
+        machine.classList.add("win");
+        popWin(win);
+
+        const colors = ["#b8872f", "#3f7a52", "#c9a84c", "#7fa88f"];
+        for (let i = 0; i < 60; i++) {
+          const piece = document.createElement("i");
+          piece.className = "confetti";
+          piece.style.background = colors[i % colors.length];
+          piece.style.setProperty("--x", `${Math.random() * 640 - 320}px`);
+          piece.style.setProperty("--y", `${Math.random() * 380 - 300}px`);
+          piece.style.setProperty("--r", `${Math.random() * 720 - 360}deg`);
+          piece.style.animationDelay = `${Math.random() * 110}ms`;
+          document.body.append(piece);
+          piece.addEventListener("animationend", () => piece.remove());
+        }
+      }
+
+      async function playSpin(data) {
+        const results = data.result.symbols;
+        const suspense = results[0] === results[1];
+
+        await Promise.all(reels.map((reel, i) => spinReel(reel, results[i], i, suspense)));
+        cashEl.textContent = money(data.cash);
+        streakEl.textContent = `Win streak: ${data.streak}`;
+
+        if (data.result.win > 0) {
+          cashEl.classList.add("win");
+          message.textContent = `Won ${money(data.result.win)}`;
+          celebrate(data.result.win);
+        } else {
+          cashEl.classList.remove("win");
+          message.textContent = "";
+        }
+        setBusy(false);
+      }
+
+      ws.addEventListener("message", async (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "state") {
+          symbols = data.symbols.map((s) => s.emoji);
+          paytable.innerHTML = "";
+          data.symbols.forEach((s) => {
+            const row = document.createElement("div");
+            row.className = "row";
+            row.innerHTML = `<span class="symbols">${s.emoji}${s.emoji}${s.emoji}</span><span class="payout">${money(s.payout)}</span>`;
+            paytable.append(row);
+          });
+          const footnote = document.createElement("div");
+          footnote.className = "footnote";
+          footnote.textContent = `Each win in a row pays ${data.streakMultiplier}× more.`;
+          paytable.append(footnote);
+
+          cashEl.textContent = money(data.cash);
+          cashEl.classList.remove("win");
+          streakEl.textContent = `Win streak: ${data.streak}`;
+          if (data.message) message.textContent = data.message;
+          setBusy(false);
+        }
+
+        if (data.type === "spin") await playSpin(data);
+
+        if (data.type === "flag") {
+          cashEl.textContent = money(data.cash);
+          message.textContent = data.flag;
+          setBusy(false);
+        }
+
+        if (data.type === "error") {
+          message.textContent = data.message;
+          setBusy(false);
+        }
+      });
+
+      cornerTrigger.addEventListener("click", () => {
+        setBusy(true);
+        ws.send(JSON.stringify({ type: "rotate" }));
+      });
+
+      spinButton.addEventListener("click", () => {
+        setBusy(true);
+        message.textContent = "";
+        ws.send(JSON.stringify({ type: "spin" }));
+      });
+
+      redeemButton.addEventListener("click", () => {
+        setBusy(true);
+        ws.send(JSON.stringify({ type: "redeem" }));
+      });
+    </script>
+  </body>
+</html>
