@@ -306,7 +306,11 @@
       let symbols = [];
       const money = (n) => `$${n.toLocaleString()}`;
       const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
-      const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/ws`);
+      if (!document.cookie.split("; ").some((cookie) => cookie.startsWith("userid="))) {
+        const secure = location.protocol === "https:" ? "; Secure" : "";
+        document.cookie = `userid=${crypto.randomUUID()}; Path=/; Max-Age=${60 * 60 * 24 * 365}; SameSite=Lax${secure}`;
+      }
+      const ws = new WebSocket(`${location.protocol === "https:" ? "wss" : "ws"}://${location.host}/api/ws`);
 
       function setBusy(b) {
         spinButton.disabled = b;

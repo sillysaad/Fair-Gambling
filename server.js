@@ -7,7 +7,7 @@ const path = require("path");
 const app = express();
 
 const server = http.createServer(app);
-const wss = new WebSocketServer({ server, path: "/ws" });
+const wss = new WebSocketServer({ server, path: "/api/ws" });
 
 const SYMBOLS = [
   { emoji: "🍒", payout: 50 },
@@ -224,4 +224,8 @@ wss.on("connection", (ws, req) => {
 });
 
 const PORT = process.env.PORT || 3001;
-server.listen(PORT, () => console.log(`Fair Gambling (hard) running on :${PORT}`));
+if (require.main === module) {
+  server.listen(PORT, () => console.log(`Fair Gambling (hard) running on :${PORT}`));
+}
+
+module.exports = server;
